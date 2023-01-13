@@ -55,20 +55,20 @@
 </template>
 
 <script lang="ts">
+import type { User } from "../types/user";
 import "./header.css";
 import MyButton from "./Button.vue";
+import { defineComponent, type PropType } from "vue";
 
-export default {
+export default defineComponent({
   name: "my-header",
 
   components: { MyButton },
 
   props: {
-    user: {
-      type: Object,
-    },
+    user: Object as PropType<User>,
   },
 
   emits: ["login", "logout", "createAccount"],
-};
+});
 </script>
