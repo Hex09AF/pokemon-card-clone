@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { round, clamp } from "../helpers/math";
 type CardProps = {
   name?: string;
   img?: string;
@@ -41,11 +42,68 @@ const frontImage = ref("");
 setTimeout(() => {
   frontImage.value = baseImage + props.img;
 }, 20);
+const galaxyPosition = Math.floor(Math.random() * 1500);
 const btnCardRef = ref<HTMLButtonElement | null>(null);
 watch(btnCardRef, (cur: HTMLButtonElement | null) => {
   cur &&
-    cur.addEventListener("pointermove", (e) => {
-      console.log(e);
+    cur.addEventListener("pointermove", (e: PointerEvent) => {
+      const elem = cur;
+      const rect = elem.getBoundingClientRect();
+      const absolute = {
+        x: e.clientX - rect.left, // get mouse position from left
+        y: e.clientY - rect.top, // get mouse position from right
+      };
+      const percent = {
+        x: round((100 / rect.width) * absolute.x),
+        y: round((100 / rect.height) * absolute.y),
+      };
+      const center = {
+        x: percent.x - 50,
+        y: percent.y - 50,
+      };
+      const springGlare = {
+        x: 0,
+        y: 0,
+        o: 0,
+      };
+      const springBackground = {
+        x: 0,
+        y: 0,
+      };
+      springBackground.x = round(50 + percent.x / 4 - 12.5);
+      springBackground.y = round(50 + percent.y / 3 - 16.67);
+      const springRotate = {
+        x: 0,
+        y: 0,
+      };
+      springRotate.x = round(-(center.x / 3.5));
+      springRotate.y = round(center.y / 2);
+      springGlare.x = percent.x;
+      springGlare.y = percent.y;
+      springGlare.o = 1;
+      elem.style.setProperty("--mx", `${springGlare.x}%`);
+      elem.style.setProperty("--my", `${springGlare.y}%`);
+      elem.style.setProperty("--o", `${springGlare.o}`);
+      elem.style.setProperty("--rx", `${springRotate.x}deg`);
+      elem.style.setProperty("--ry", `${springRotate.y}deg`);
+      elem.style.setProperty(
+        "--pos",
+        `${springBackground.x}% ${springBackground.y}%`
+      );
+      elem.style.setProperty("--posx", `${springBackground.x}%`);
+      elem.style.setProperty("--posy", `${springBackground.y}%`);
+      elem.style.setProperty(
+        "--hyp",
+        `${clamp(
+          Math.sqrt(
+            (springGlare.y - 50) * (springGlare.y - 50) +
+              (springGlare.x - 50) * (springGlare.x - 50)
+          ) / 50,
+          0,
+          1
+        )}`
+      );
+      elem.style.setProperty("--galaxybg", `center ${galaxyPosition}px`);
     });
 });
 </script>
