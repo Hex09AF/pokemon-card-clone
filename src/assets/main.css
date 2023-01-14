@@ -170,8 +170,8 @@
 
   clip-path: inset(10% 8.5% 52.5% 8.5%);
 
-  background-image: url("../img/galaxy.jpg"), url("../img/galaxy.jpg"),
-    url("../img/galaxy.jpg"),
+  background-image: url("./img/galaxy.jpg"), url("./img/galaxy.jpg"),
+    url("./img/galaxy.jpg"),
     repeating-linear-gradient(
       82deg,
       rgb(219, 204, 86) calc(var(--space) * 1),
@@ -299,7 +299,7 @@
   --space: 6%;
   --angle: 133deg;
   --imgsize: 60% 30%;
-  background-image: url("../img/vmaxbg.jpg"),
+  background-image: url("./img/vmaxbg.jpg"),
     repeating-linear-gradient(
       -33deg,
       rgb(206, 42, 36) calc(var(--space) * 1),
@@ -347,7 +347,7 @@
   --angle: 133deg;
   --imgsize: 18% 15%;
 
-  background-image: url("../img/ancient.png"),
+  background-image: url("./img/ancient.png"),
     repeating-linear-gradient(
       0deg,
       rgb(255, 119, 115) calc(var(--space) * 1),
@@ -407,7 +407,7 @@
   --angle: 133deg;
   --imgsize: 50% 42%;
 
-  background-image: url("../img/illusion.png"),
+  background-image: url("./img/illusion.png"),
     repeating-linear-gradient(
       0deg,
       rgb(255, 119, 115) calc(var(--space) * 1),
@@ -465,7 +465,7 @@
   --angle: 133deg;
   --imgsize: 25% 20%;
 
-  background-image: url("../img/trainerbg.png"),
+  background-image: url("./img/trainerbg.png"),
     repeating-linear-gradient(
       0deg,
       rgb(255, 119, 115) calc(var(--space) * 1),
@@ -525,7 +525,7 @@
   --angle2: 130deg;
   --imgsize: 130% 180%;
 
-  background-image: url("../img/glitter.png"),
+  background-image: url("./img/glitter.png"),
     repeating-linear-gradient(
       var(--angle),
       rgb(253, 71, 65) calc(var(--rainbowspace) * 1),
@@ -545,7 +545,7 @@
       rgba(14, 21, 46, 0.5) calc(var(--overlayspace) * 5),
       rgba(14, 21, 46, 0.5) calc(var(--overlayspace) * 6)
     ),
-    url("../img/illusion2.png");
+    url("./img/illusion2.png");
 
   background-size: 20% 15%, 500% 500%, 1000% 1000%, var(--imgsize);
   background-position: center, calc(var(--posx) * 1.5) calc(var(--posy) * 1.5),
@@ -586,7 +586,7 @@
   --angle: 110deg;
   --imgsize: 28% 23%;
 
-  background-image: url("../img/glitter.png"),
+  background-image: url("./img/glitter.png"),
     repeating-linear-gradient(
       var(--angle),
       rgba(89, 46, 80, 0.5) 0%,
@@ -596,7 +596,7 @@
       rgba(14, 21, 46, 0.5) 10%,
       rgba(14, 21, 46, 0.5) 15%
     ),
-    url("../img/metal.png");
+    url("./img/metal.png");
 
   background-size: 25% 25%, 600% 100%, var(--imgsize);
   background-position: center, var(--posx) var(--posy), center;
@@ -608,7 +608,7 @@
 .card[data-rarity="rare secret"] .card__shine:after {
   content: "";
 
-  background-image: url("../img/glitter.png"),
+  background-image: url("./img/glitter.png"),
     repeating-linear-gradient(
       var(--angle),
       rgba(89, 46, 80, 0.5) 0%,
@@ -715,7 +715,7 @@
 .card[data-rarity*="radiant"] .card__shine:after {
   content: "";
 
-  background-image: url("../img/glitter.png"),
+  background-image: url("./img/glitter.png"),
     repeating-linear-gradient(
       55deg,
       rgb(255, 161, 158) calc(var(--space) * 1),
@@ -825,7 +825,7 @@
 .card[data-rarity="rare holo v"][data-gallery="true"] .card__shine:after {
   --space: 5%;
   --angle: 133deg;
-  --img: url("../img/illusion.png");
+  --img: url("./img/illusion.png");
   --imgsize: 60% 52%;
 
   background-image: var(--img),
@@ -878,6 +878,6 @@
   .card__shine,
 .card[data-rarity="rare holo v"][data-gallery="true"][data-subtypes*="vmax"]
   .card__shine:after {
-  --img: url("../img/stylish.png");
+  --img: url("./img/stylish.png");
   --imgsize: 30% 26%;
 }

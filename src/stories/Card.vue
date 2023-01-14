@@ -1,13 +1,5 @@
 <script setup lang="ts">
-// import { spring } from "svelte/motion";
-// import { onMount } from "svelte";
-// import { activeCard } from "../stores/activeCard.js";
-// import { orientation, resetBaseOrientation } from "../stores/orientation.js";
-// import { clamp, round } from "../helpers/Math.js";
-
-import { computed, ref } from "vue";
-// import Glare from "./Glare.vue";
-// import Shine from "./Shine.vue";
+import { computed, ref, watch } from "vue";
 type CardProps = {
   name?: string;
   img?: string;
@@ -20,7 +12,7 @@ type CardProps = {
 };
 const props = withDefaults(defineProps<CardProps>(), {
   name: "",
-  img: "https://images.pokemontcg.io/swsh1/190_hires.png",
+  img: "",
   number: "",
   supertype: "pokémon",
   subtypes: "basic",
@@ -28,339 +20,35 @@ const props = withDefaults(defineProps<CardProps>(), {
   gallery: false,
   showcase: false,
 });
-
-const filteredSubType = computed(() => {
-  let filtered = props.subtypes;
-  if (Array.isArray(filtered)) {
-    filtered = filtered.join(" ").toLowerCase();
+const filtered = computed(() => {
+  let filtered = { ...props };
+  filtered.subtypes = "";
+  filtered.rarity = props.rarity.toLowerCase();
+  filtered.supertype = props.supertype.toLowerCase();
+  filtered.number = props.number.toLowerCase();
+  filtered.gallery = props.number.startsWith("tg");
+  if (Array.isArray(props.subtypes)) {
+    filtered.subtypes = props.subtypes.join(" ").toLowerCase();
   }
   return filtered;
 });
-
-let back_img = "https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg";
-
-const back_loading =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAuCAYAAACmsnC6AAAANklEQVR42u3OMQEAAAQAMKJJJT4ZXJ4twTKqJ56lhISEhISEhISEhISEhISEhISEhISEhMTdAodwTxGtMFP/AAAAAElFTkSuQmCC";
-const front_loading =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAuCAYAAACmsnC6AAAAN0lEQVR42u3OIQEAMAgAsNP/AkFfyIDCbAkWP6vfsZCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ2BtyOnuhnmSZZAAAAABJRU5ErkJggg==";
-
-let img_base = props.img.startsWith("http")
+const backImage =
+  "https://tcg.pokemon.com/assets/img/global/tcg-card-back-2x.jpg";
+const baseImage = props.img.startsWith("http")
   ? ""
   : "https://images.pokemontcg.io/";
-let front_img = ref("");
-
-const galaxyPosition = Math.floor(Math.random() * 1500);
-
+const frontImage = ref("");
 setTimeout(() => {
-  front_img.value = img_base + props.img;
+  frontImage.value = baseImage + props.img;
 }, 20);
-
-let thisCard;
-let rotator;
-let debounce;
-let active = false;
-let interacting = false;
-let firstPop = true;
-let loading = true;
-let isVisible = document.visibilityState === "visible";
-
-const springR = { stiffness: 0.066, damping: 0.25 };
-const springD = { stiffness: 0.033, damping: 0.45 };
-
-// let springRotate = spring({ x: 0, y: 0 }, springR);
-// let springGlare = spring({ x: 50, y: 50, o: 0 }, springR);
-// let springBackground = spring({ x: 50, y: 50 }, springR);
-// let springRotateDelta = spring({ x: 0, y: 0 }, springD);
-// let springTranslate = spring({ x: 0, y: 0 }, springD);
-// let springScale = spring(1, springD);
-
-let showcaseInterval;
-let showcaseTimerStart;
-let showcaseTimerEnd;
-let showcaseRunning = true;
-
-// const interact = (e) => {
-//   if (showcaseRunning) {
-//     clearTimeout(showcaseTimerEnd);
-//     clearTimeout(showcaseTimerStart);
-//     clearInterval(showcaseInterval);
-//     showcaseRunning = false;
-//   }
-
-//   if (isVisible && $activeCard && $activeCard !== thisCard) {
-//     return (interacting = false);
-//   }
-
-//   interacting = true;
-
-//   if (e.type === "touchmove") {
-//     e.clientX = e.touches[0].clientX;
-//     e.clientY = e.touches[0].clientY;
-//   }
-
-//   const $el = e.target;
-//   const rect = $el.getBoundingClientRect(); // get element's current size/position
-//   const absolute = {
-//     x: e.clientX - rect.left, // get mouse position from left
-//     y: e.clientY - rect.top, // get mouse position from right
-//   };
-//   const percent = {
-//     x: round((100 / rect.width) * absolute.x),
-//     y: round((100 / rect.height) * absolute.y),
-//   };
-//   const center = {
-//     x: percent.x - 50,
-//     y: percent.y - 50,
-//   };
-
-//   springBackground.stiffness = springR.stiffness;
-//   springBackground.damping = springR.damping;
-//   springBackground.set({
-//     x: round(50 + percent.x / 4 - 12.5),
-//     y: round(50 + percent.y / 3 - 16.67),
-//   });
-//   springRotate.stiffness = springR.stiffness;
-//   springRotate.damping = springR.damping;
-//   springRotate.set({
-//     x: round(-(center.x / 3.5)),
-//     y: round(center.y / 2),
-//   });
-//   springGlare.stiffness = springR.stiffness;
-//   springGlare.damping = springR.damping;
-//   springGlare.set({
-//     x: percent.x,
-//     y: percent.y,
-//     o: 1,
-//   });
-// };
-
-// const interactEnd = (e, delay = 500) => {
-//   setTimeout(function () {
-//     const snapStiff = 0.01;
-//     const snapDamp = 0.06;
-//     interacting = false;
-
-//     springRotate.stiffness = snapStiff;
-//     springRotate.damping = snapDamp;
-//     springRotate.set({ x: 0, y: 0 }, { soft: 1 });
-
-//     springGlare.stiffness = snapStiff;
-//     springGlare.damping = snapDamp;
-//     springGlare.set({ x: 50, y: 50, o: 0 }, { soft: 1 });
-
-//     springBackground.stiffness = snapStiff;
-//     springBackground.damping = snapDamp;
-//     springBackground.set({ x: 50, y: 50 }, { soft: 1 });
-//   }, delay);
-// };
-
-// const activate = (e) => {
-//   if ($activeCard && $activeCard === thisCard) {
-//     $activeCard = undefined;
-//   } else {
-//     $activeCard = thisCard;
-//     resetBaseOrientation();
-//   }
-// };
-
-// const deactivate = (e) => {
-//   interactEnd();
-//   $activeCard = undefined;
-// };
-
-// const reposition = (e) => {
-//   clearTimeout(debounce);
-//   debounce = setTimeout(() => {
-//     if ($activeCard && $activeCard === thisCard) {
-//       setCenter();
-//     }
-//   }, 300);
-// };
-
-// const setCenter = () => {
-//   const rect = thisCard.getBoundingClientRect(); // get element's size/position
-//   const view = document.documentElement; // get window/viewport size
-
-//   const delta = {
-//     x: round(view.clientWidth / 2 - rect.x - rect.width / 2),
-//     y: round(view.clientHeight / 2 - rect.y - rect.height / 2),
-//   };
-//   springTranslate.set({
-//     x: delta.x,
-//     y: delta.y,
-//   });
-// };
-
-// const popover = () => {
-//   const rect = thisCard.getBoundingClientRect(); // get element's size/position
-//   let delay = 100;
-//   let scaleW = (window.innerWidth / rect.width) * 0.9;
-//   let scaleH = (window.innerHeight / rect.height) * 0.9;
-//   let scaleF = 1.75;
-//   setCenter();
-//   if (firstPop) {
-//     delay = 1000;
-//     springRotateDelta.set({
-//       x: 360,
-//       y: 0,
-//     });
-//   }
-//   firstPop = false;
-//   springScale.set(Math.min(scaleW, scaleH, scaleF));
-//   interactEnd(null, delay);
-// };
-
-// const retreat = () => {
-//   springScale.set(1, { soft: true });
-//   springTranslate.set({ x: 0, y: 0 }, { soft: true });
-//   springRotateDelta.set({ x: 0, y: 0 }, { soft: true });
-//   interactEnd(null, 100);
-// };
-
-// const reset = () => {
-//   interactEnd(null, 0);
-//   springScale.set(1, { hard: true });
-//   springTranslate.set({ x: 0, y: 0 }, { hard: true });
-//   springRotateDelta.set({ x: 0, y: 0 }, { hard: true });
-//   springRotate.set({ x: 0, y: 0 }, { hard: true });
-// };
-
-// $: {
-//   if ($activeCard && $activeCard === thisCard) {
-//     popover();
-//     active = true;
-//   } else {
-//     retreat();
-//     active = false;
-//   }
-// }
-
-let styles = "";
-// $: styles = `
-// 	--mx: ${$springGlare.x}%;
-// 	--my: ${$springGlare.y}%;
-// 	--tx: ${$springTranslate.x}px;
-// 	--ty: ${$springTranslate.y}px;
-// 	--s: ${$springScale};
-// 	--o: ${$springGlare.o};
-// 	--rx: ${$springRotate.x + $springRotateDelta.x}deg;
-// 	--ry: ${$springRotate.y + $springRotateDelta.y}deg;
-// 	--pos: ${$springBackground.x}% ${$springBackground.y}%;
-// 	--posx: ${$springBackground.x}%;
-// 	--posy: ${$springBackground.y}%;
-// 	--hyp: ${
-//     clamp( Math.sqrt(
-//       ($springGlare.y - 50) * ($springGlare.y - 50) +
-//         ($springGlare.x - 50) * ($springGlare.x - 50)
-//     ) / 50, 0, 1)
-//   };
-//   --galaxybg: center ${galaxyPosition}px;
-// `;
-
-// $: {
-//   rarity = rarity.toLowerCase();
-//   supertype = supertype.toLowerCase();
-//   number = number.toLowerCase();
-//   gallery = number.startsWith("tg");
-//   if (Array.isArray(subtypes)) {
-//     subtypes = subtypes.join(" ").toLowerCase();
-//   }
-// }
-
-// const imageLoader = (e) => {
-//   loading = false;
-// };
-
-// const orientate = (e) => {
-//   const x = e.relative.gamma;
-//   const y = e.relative.beta;
-
-//   const max = { x: 16, y: 18 };
-//   const degrees = { x: clamp(x, -max.x, max.x), y: clamp(y, -max.y, max.y) };
-//   const percent = {
-//     x: 50 + (degrees.x / (max.x * 2)) * 100,
-//     y: 50 + (degrees.y / (max.y * 2)) * 100,
-//   };
-
-//   springBackground.stiffness = springR.stiffness;
-//   springBackground.damping = springR.damping;
-//   springBackground.set({
-//     x: round(50 + (max.x * 2 * ((50 - -percent.x) / 100) - max.x * 2)),
-//     y: round(50 + (max.y * 2 * ((50 + percent.y) / 100) - max.y * 2)),
-//   });
-//   springRotate.stiffness = springR.stiffness;
-//   springRotate.damping = springR.damping;
-//   springRotate.set({
-//     x: round(degrees.x * -1),
-//     y: round(degrees.y),
-//   });
-//   springGlare.stiffness = springR.stiffness;
-//   springGlare.damping = springR.damping;
-//   springGlare.set({
-//     x: round(percent.x),
-//     y: round(percent.y),
-//     o: 1,
-//   });
-// };
-
-// $: {
-//   if ($activeCard && $activeCard === thisCard) {
-//     interacting = true;
-//     orientate($orientation);
-//   }
-// }
-
-// document.addEventListener("visibilitychange", (e) => {
-//   isVisible = document.visibilityState === "visible";
-//   if (!isVisible) {
-//     reset();
-//   }
-// });
-
-// onMount(() => {
-//   if (showcase && isVisible) {
-//     let showTimer;
-//     const s = 0.02;
-//     const d = 0.5;
-//     let r = 0;
-//     showcaseTimerStart = setTimeout(() => {
-//       interacting = true;
-//       active = true;
-//       springRotate.stiffness = s;
-//       springRotate.damping = d;
-//       springGlare.stiffness = s;
-//       springGlare.damping = d;
-//       springBackground.stiffness = s;
-//       springBackground.damping = d;
-//       if (isVisible) {
-//         showcaseInterval = setInterval(function () {
-//           r += 0.05;
-//           springRotate.set({ x: Math.sin(r) * 25, y: Math.cos(r) * 25 });
-//           springGlare.set({
-//             x: 55 + Math.sin(r) * 55,
-//             y: 55 + Math.cos(r) * 55,
-//             o: 0.8,
-//           });
-//           springBackground.set({
-//             x: 20 + Math.sin(r) * 20,
-//             y: 20 + Math.cos(r) * 20,
-//           });
-//         }, 20);
-//         showcaseTimerEnd = setTimeout(() => {
-//           clearInterval(showcaseInterval);
-//           interactEnd(null, 0);
-//         }, 4000);
-//       } else {
-//         interacting = false;
-//         active = false;
-//         return;
-//       }
-//     }, 2000);
-//   }
-// });
+const btnCardRef = ref<HTMLButtonElement | null>(null);
+watch(btnCardRef, (cur: HTMLButtonElement | null) => {
+  cur &&
+    cur.addEventListener("pointermove", (e) => {
+      console.log(e);
+    });
+});
 </script>
-
-<!-- <svelte:window on:scroll={reposition} /> -->
 
 <script lang="ts">
 import "../assets/base.css";
@@ -376,21 +64,22 @@ export default {
 <template>
   <div
     class="card"
-    :data-number="number"
-    :data-subtypes="subtypes"
-    :data-supertype="supertype"
-    :data-rarity="rarity"
-    :data-gallery="gallery"
+    :data-number="filtered.number"
+    :data-subtypes="filtered.subtypes"
+    :data-supertype="filtered.supertype"
+    :data-rarity="filtered.rarity"
+    :data-gallery="filtered.gallery"
   >
     <div class="card__translater">
       <button
         class="card__rotator"
         aria-label="Expand the Pokemon Card; {name}."
+        ref="btnCardRef"
         tabindex="0"
       >
         <img
           class="card__back"
-          :src="back_img"
+          :src="backImage"
           alt="The back of a Pokemon Card, a Pokeball in the center with Pokemon logo above and below"
           loading="lazy"
           width="660"
@@ -398,14 +87,14 @@ export default {
         />
         <div class="card__front">
           <img
-            :src="front_img"
+            :src="frontImage"
             :alt="`Front design of the ${name} Pokemon Card, with the stats and info around the edge`"
             loading="lazy"
             width="660"
             height="921"
           />
-          <my-shine :subtypes="filteredSubType" :supertype="supertype" />
-          <my-glare :subtypes="filteredSubType" :rarity="rarity" />
+          <my-shine :subtypes="filtered.subtypes" :supertype="supertype" />
+          <my-glare :subtypes="filtered.subtypes" :rarity="rarity" />
         </div>
       </button>
     </div>
@@ -417,7 +106,7 @@ export default {
   --mx: 50%;
   --my: 50%;
   --s: 1;
-  --o: 0;
+  --o: 1;
   --tx: 0px;
   --ty: 0px;
   --rx: 0deg;
@@ -425,10 +114,11 @@ export default {
   --pos: 50% 50%;
   --posx: 50%;
   --posy: 50%;
-  --hyp: 0;
+  --hyp: 1;
 }
 
 .card {
+  max-width: 500px;
   --radius: 4.55% / 3.5%;
   --back: #004177;
   --glow: #69d1e9;
