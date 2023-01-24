@@ -176,7 +176,7 @@ export default {
 }
 
 .card {
-  max-width: 500px;
+  max-width: 300px;
   --radius: 4.55% / 3.5%;
   --back: #004177;
   --glow: #69d1e9;
